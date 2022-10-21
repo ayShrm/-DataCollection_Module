@@ -27,7 +27,7 @@ public class DcChildrenEntity {
 //	private Integer caseNum;
 
 	private String childrenName;
-	private String childrenDob;
+	private Integer childrenAge;
 	private Double childrenSsn;
 
 	@CreationTimestamp

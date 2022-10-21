@@ -1,13 +1,16 @@
 package in.ayush.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import in.ayush.dto.Children;
 import in.ayush.dto.ChildrenDto;
 import in.ayush.dto.DcSummary;
 import in.ayush.dto.EducationDto;
@@ -59,13 +62,13 @@ public class DcServiceImpl implements DcService {
 	}
 
 	@Override
-	public List<String> getPlanNames() {
+	public Map<Integer, String> getPlanNames() {
 		List<PlanEntity> findAll = planRepo.findAll();
-		List<String> plans = new ArrayList<String>();
+		Map<Integer, String> plansMap = new HashMap<Integer, String>();
 		for (PlanEntity entity : findAll) {
-			plans.add(entity.getPlanName());
+			plansMap.put(entity.getPlanId(), entity.getPlanName());
 		}
-		return plans;
+		return plansMap;
 	}
 
 	@Override
@@ -117,18 +120,22 @@ public class DcServiceImpl implements DcService {
 	}
 
 	@Override
-	public Long saveChildren(List<ChildrenDto> childrenDto) {
-		for (ChildrenDto entity : childrenDto) {
-			Optional<DcCasesEntity> caseEntity = casesRepo.findById(entity.getCaseNum());
-			DcChildrenEntity childrenEntity = new DcChildrenEntity(caseEntity.get());
-			childrenEntity.setChildrenName(entity.getChildrenName());
-			childrenEntity.setChildrenDob(entity.getChildrenDob());
-			childrenEntity.setChildrenSsn(entity.getChildrenSsn());
-			childrenRepo.save(childrenEntity);
+	public Long saveChildren(Children request) {
+		Optional<DcCasesEntity> caseEntity = casesRepo.findById(request.getCaseNum());
+		if (caseEntity.isPresent()) {
+			List<ChildrenDto> children = request.getChildren();
+			for (ChildrenDto entity : children) {
+				DcChildrenEntity childrenEntity = new DcChildrenEntity(caseEntity.get());
+				childrenEntity.setChildrenName(entity.getChildrenName());
+				childrenEntity.setChildrenAge(entity.getChildrenAge());
+				childrenEntity.setChildrenSsn(entity.getChildrenSsn());
+				childrenRepo.save(childrenEntity);
+			}
+			return request.getCaseNum();
 		}
-		//Long caseNum = childrenDto.stream().findFirst().get().getCaseNum();
-		Long caseNum = childrenDto.get(0).getCaseNum();
-		return caseNum;
+		// Long caseNum = childrenDto.stream().findFirst().get().getCaseNum();
+		// Long caseNum = childrenDto.get(0).getCaseNum();
+		return null;
 	}
 
 	@Override
